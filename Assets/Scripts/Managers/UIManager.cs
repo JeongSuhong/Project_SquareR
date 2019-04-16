@@ -4,15 +4,36 @@ using UnityEngine;
 
 public class UIManager : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    private static UIManager instance;
+    public static UIManager Instance
     {
-        
+        get
+        {
+            if (instance == null)
+                instance = new UIManager();
+
+            return instance;
+        }
     }
 
-    // Update is called once per frame
-    void Update()
+    public UIAtlasManager AtlasManager { get; private set; }
+
+    public delegate void UpdateUIDelegate(DataDefine.GAME_STATE gameState);
+    public event UpdateUIDelegate OnUpdateUI;
+
+    private void Awake()
     {
-        
+        instance = this;
+    }
+
+    private void Start()
+    {
+        AtlasManager = GetComponentInChildren<UIAtlasManager>();
+        WorldManager.Instance.OnChangeGameState += ChangeGameState;
+    }
+
+    private void ChangeGameState(DataDefine.GAME_STATE changeState)
+    {
+        OnUpdateUI?.Invoke(changeState);
     }
 }
