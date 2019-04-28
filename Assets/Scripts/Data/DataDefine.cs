@@ -18,13 +18,14 @@ public static class DataDefine
         ITEM,
     }
 
-    public enum SKILL_BLOCK_TYPE
+    public enum SKILL_TYPE
     {
         YELLOW,
         RED,
         GREEN,
         BLUE,
-        RAINBOW
+        RAINBOW,
+        MAX,
     }
 
     public enum ITEM_BLOCK_TYPE
@@ -35,7 +36,7 @@ public static class DataDefine
 
     public enum SKIN_TYPE
     {
-        BASIC,
+        BASIC = 1,
     }
-    
+
 }

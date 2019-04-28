@@ -7,7 +7,8 @@ public class UIStageBlock : MonoBehaviour
 {
     public DataDefine.BLOCK_TYPE Type; //{ get; private set; }
 
-    private Image icon;
+    private Image background;
+    private Image itemIcon;
     private bool init;
 
     public void SetBlockData(DataDefine.BLOCK_TYPE type)
@@ -20,14 +21,22 @@ public class UIStageBlock : MonoBehaviour
         switch (Type)
         {
             case DataDefine.BLOCK_TYPE.TARGET:
-                icon.sprite = UIManager.Instance.AtlasManager.TargetSprite;
+                background.sprite = UIManager.Instance.AtlasManager.TargetBlockSprite;
+                break;
+            case DataDefine.BLOCK_TYPE.TRAP:
+                background.sprite = UIManager.Instance.AtlasManager.TrapBlockSprite;
+                break;
+            default:
+                background.sprite = UIManager.Instance.AtlasManager.EmptyBlockSprite;
                 break;
         }
     }
 
     private void InitBlock()
     {
-        icon = GetComponentInChildren<Image>();
+        background = GetComponent<Image>();
+        itemIcon = GetComponentsInChildren<Image>()[1];
+        itemIcon.gameObject.SetActive(false);
 
         init = true;
     }

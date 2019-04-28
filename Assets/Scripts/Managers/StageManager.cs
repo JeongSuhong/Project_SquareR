@@ -17,6 +17,7 @@ public class StageManager : MonoBehaviour
     }
 
     public DataDefine.BLOCK_TYPE[,] MapData { get; private set; }
+    public Dictionary<DataDefine.SKILL_TYPE, int> SkillData { get; private set; }
 
     private void Awake()
     {
@@ -36,6 +37,11 @@ public class StageManager : MonoBehaviour
         MapData[4, 5] = DataDefine.BLOCK_TYPE.TARGET;
         MapData[5, 0] = DataDefine.BLOCK_TYPE.TARGET;
         MapData[3, 3] = DataDefine.BLOCK_TYPE.TRAP;
+
+        SkillData = new Dictionary<DataDefine.SKILL_TYPE, int>();
+        SkillData.Add(DataDefine.SKILL_TYPE.BLUE, 1);
+        SkillData.Add(DataDefine.SKILL_TYPE.YELLOW, 2);
+        SkillData.Add(DataDefine.SKILL_TYPE.RED, 1);
     }
 
     
