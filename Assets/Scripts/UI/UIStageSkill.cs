@@ -1,9 +1,10 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UIStageSkill : MonoBehaviour
+public class UIStageSkill : MonoBehaviour, IDragScrollItem
 {
     public DataDefine.SKILL_TYPE Type { get; private set; }
 
@@ -29,13 +30,29 @@ public class UIStageSkill : MonoBehaviour
         
         skillBG.sprite = UIManager.Instance.AtlasManager.SkillSprites[(int)type];
         countBG.sprite = UIManager.Instance.AtlasManager.SkillCountSprites[(int)type];
-        countText.text = Count.ToString();
         countBG.gameObject.SetActive(true);
+        SetCount(count);
     }
 
     public void SetEmptySkill()
     {
         skillBG.sprite = UIManager.Instance.AtlasManager.EmptyBlockSprite;
         countBG.gameObject.SetActive(false);
+    }
+
+    private void SetCount(int value)
+    {
+        countText.text = value.ToString();
+    }
+
+    public void OnStartDrag(Action<Sprite, Action> viewItemAction)
+    {
+        viewItemAction?.Invoke(skillBG.sprite, OnEndDrag);
+        SetCount(Count - 1);
+    }
+
+    private void OnEndDrag()
+    {
+
     }
 }
