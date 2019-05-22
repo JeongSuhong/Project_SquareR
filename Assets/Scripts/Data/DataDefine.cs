@@ -20,12 +20,13 @@ public static class DataDefine
 
     public enum SKILL_TYPE
     {
+        TEMP = -1,
         YELLOW,
         RED,
         GREEN,
         BLUE,
         RAINBOW,
-        MAX,
+        COUNT,
     }
 
     public enum ITEM_BLOCK_TYPE

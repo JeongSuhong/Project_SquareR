@@ -23,8 +23,8 @@ public class UIAtlasManager : MonoBehaviour
         TargetBlockSprite = commonAtlas.GetSprite("block_" + DataDefine.BLOCK_TYPE.TARGET.ToString().ToLower());
         TrapBlockSprite = commonAtlas.GetSprite("block_" + DataDefine.BLOCK_TYPE.TRAP.ToString().ToLower());
 
-        SkillSprites = new Sprite[(int)DataDefine.SKILL_TYPE.MAX];
-        SkillCountSprites = new Sprite[(int)DataDefine.SKILL_TYPE.MAX];
+        SkillSprites = new Sprite[(int)DataDefine.SKILL_TYPE.COUNT];
+        SkillCountSprites = new Sprite[(int)DataDefine.SKILL_TYPE.COUNT];
         SetUISkin(DataDefine.SKIN_TYPE.BASIC);
     }
 
@@ -39,7 +39,7 @@ public class UIAtlasManager : MonoBehaviour
 
         foreach (string type in System.Enum.GetNames(typeof(DataDefine.SKILL_TYPE)))
         {
-            if (string.Equals(type, "MAX"))
+            if (string.Equals(type, DataDefine.SKILL_TYPE.COUNT.ToString()) || string.Equals(type, DataDefine.SKILL_TYPE.TEMP.ToString()))
                 break;
 
             SkillSprites[index] = atlas.GetSprite(string.Format(skillSpriteName, type.ToLower()));

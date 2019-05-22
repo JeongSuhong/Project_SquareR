@@ -10,25 +10,28 @@ public class UIStageSkill : MonoBehaviour, IDragScrollItem
 
     public int Count { get; private set; }
     public int OriginCount { get; private set; }
+    public Image SkillBG { get; private set; }
 
-    private Image skillBG;
     private Image countBG;
     private Text countText;
+
+    private Action<UIStageSkill> startSkillAction;
 
     private void Awake()
     {
         Image[] childImages = GetComponentsInChildren<Image>();
-        skillBG = childImages[0];
+        SkillBG = childImages[0];
         countBG = childImages[1];
         countText = GetComponentInChildren<Text>();
     }
 
-    public void SetSkill(DataDefine.SKILL_TYPE type, int count)
-    {
+    public void SetSkill(DataDefine.SKILL_TYPE type, int count, Action<UIStageSkill> startAction)
+   {
         Type = type;
         OriginCount = Count = count;
+        startSkillAction = startAction;
         
-        skillBG.sprite = UIManager.Instance.AtlasManager.SkillSprites[(int)type];
+        SkillBG.sprite = UIManager.Instance.AtlasManager.SkillSprites[(int)type];
         countBG.sprite = UIManager.Instance.AtlasManager.SkillCountSprites[(int)type];
         countBG.gameObject.SetActive(true);
         SetCount(count);
@@ -36,7 +39,7 @@ public class UIStageSkill : MonoBehaviour, IDragScrollItem
 
     public void SetEmptySkill()
     {
-        skillBG.sprite = UIManager.Instance.AtlasManager.EmptyBlockSprite;
+        SkillBG.sprite = UIManager.Instance.AtlasManager.EmptyBlockSprite;
         countBG.gameObject.SetActive(false);
     }
 
@@ -45,14 +48,9 @@ public class UIStageSkill : MonoBehaviour, IDragScrollItem
         countText.text = value.ToString();
     }
 
-    public void OnStartDrag(Action<Sprite, Action> viewItemAction)
+    public void OnStartDrag()
     {
-        viewItemAction?.Invoke(skillBG.sprite, OnEndDrag);
         SetCount(Count - 1);
-    }
-
-    private void OnEndDrag()
-    {
-
+        startSkillAction?.Invoke(this);
     }
 }

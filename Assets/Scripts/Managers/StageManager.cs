@@ -16,6 +16,8 @@ public class StageManager : MonoBehaviour
         }
     }
 
+    public readonly int BlockMaxCount = 6;
+
     public DataDefine.BLOCK_TYPE[,] MapData { get; private set; }
     public Dictionary<DataDefine.SKILL_TYPE, int> SkillData { get; private set; }
 
@@ -26,7 +28,7 @@ public class StageManager : MonoBehaviour
 
     private void Start()
     {
-        MapData = new DataDefine.BLOCK_TYPE[6, 6];
+        MapData = new DataDefine.BLOCK_TYPE[BlockMaxCount, BlockMaxCount];
 
         // Test
         MapData[0, 3] = DataDefine.BLOCK_TYPE.TARGET;
