@@ -83,8 +83,6 @@ public class UIStageController : UIControllerBase
 
     #endregion
 
-
-
     #region Set Skill
 
     private void SetSkillsUI()
@@ -175,30 +173,75 @@ public class UIStageController : UIControllerBase
         {
             List<UIStageBlock> targetList = new List<UIStageBlock>();
             targetList.Add(mapBlocks[mapIndexForSkill[0], mapIndexForSkill[1]]);
+            Dictionary<string, int[]> rangeDic = new Dictionary<string, int[]>();
+            int[] rangeIndex = new int[2];
 
-           // Debug.Log(string.Format("Target Block {0} / {1}", mapIndexForSkill[0], mapIndexForSkill[1]));
+            // Debug.Log(string.Format("Target Block {0} / {1}", mapIndexForSkill[0], mapIndexForSkill[1]));
+
             switch (skillType)
             {
-                case DataDefine.SKILL_TYPE.YELLOW:              // 위 , 아래 , 왼쪽 , 오른쪽 한칸씩
-                    if (mapIndexForSkill[0] > 0)
-                        targetList.Add(mapBlocks[mapIndexForSkill[0] - 1, mapIndexForSkill[1]]);
-                    if (mapIndexForSkill[0] < StageManager.Instance.BlockMaxCount - 1)
-                        targetList.Add(mapBlocks[mapIndexForSkill[0] + 1, mapIndexForSkill[1]]);
-                    if(mapIndexForSkill[1] > 0)
-                        targetList.Add(mapBlocks[mapIndexForSkill[0], mapIndexForSkill[1] - 1]);
-                    if (mapIndexForSkill[1] < StageManager.Instance.BlockMaxCount - 1)
-                        targetList.Add(mapBlocks[mapIndexForSkill[0], mapIndexForSkill[1] + 1]);
+                case DataDefine.SKILL_TYPE.YELLOW:
+                    rangeDic.Add("row", new int[2] { -1, 1 });
+                    rangeDic.Add("column", new int[2] { -1, 1 });
                     break;
                 case DataDefine.SKILL_TYPE.RED:
+                    rangeDic.Add("row", new int[2] { -5, 5 });
+                    rangeDic.Add("column", new int[2] { -5, 5 });
                     break;
                 case DataDefine.SKILL_TYPE.GREEN:
+                    rangeDic.Add("diagonalL", new int[2] { 0, 1 });
+                    rangeDic.Add("diagonalR", new int[2] { 0, 1 });
                     break;
                 case DataDefine.SKILL_TYPE.BLUE:
+                    rangeDic.Add("diagonalL", new int[2] { -5, 5 });
+                    rangeDic.Add("diagonalR", new int[2] { -5, 5 });
                     break;
                 case DataDefine.SKILL_TYPE.RAINBOW:
+                    rangeDic.Add("row", new int[2] { -1, 1 });
+                    rangeDic.Add("column", new int[2] { -1, 1 });
+                    rangeDic.Add("diagonalL", new int[2] { -1, 1 });
+                    rangeDic.Add("diagonalR", new int[2] { -1, 1 });
                     break;
                 default:
                     break;
+            }
+
+            foreach (KeyValuePair<string, int[]> range in rangeDic)
+            {
+                for (int i = range.Value[0]; i <= range.Value[1]; i++)
+                {
+                    if (i == 0)
+                        continue;
+
+                    rangeIndex[0] = mapIndexForSkill[0];
+                    rangeIndex[1] = mapIndexForSkill[1];
+
+                    switch (range.Key)
+                    {
+                        case "row":
+                            rangeIndex[0] += i;
+                            break;
+
+                        case "column":
+                            rangeIndex[1] += i;
+                            break;
+
+                        case "diagonalR":
+                            rangeIndex[0] += i;
+                            rangeIndex[1] += i;
+                            break;
+
+                        case "diagonalL":
+                            rangeIndex[0] -= i;
+                            rangeIndex[1] += i;
+                            break;
+                    }
+
+                    if (rangeIndex[0] < 0 || rangeIndex[0] >= StageManager.Instance.BlockMaxCount || rangeIndex[1] < 0 || rangeIndex[1] >= StageManager.Instance.BlockMaxCount)
+                        continue;
+
+                    targetList.Add(mapBlocks[rangeIndex[0], rangeIndex[1]]);
+                }
             }
 
             OnUpdateMapBlock?.Invoke(skillType, targetList, isPreivew);

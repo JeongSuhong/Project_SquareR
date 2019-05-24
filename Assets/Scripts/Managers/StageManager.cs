@@ -44,6 +44,8 @@ public class StageManager : MonoBehaviour
         SkillData.Add(DataDefine.SKILL_TYPE.BLUE, 1);
         SkillData.Add(DataDefine.SKILL_TYPE.YELLOW, 2);
         SkillData.Add(DataDefine.SKILL_TYPE.RED, 1);
+        SkillData.Add(DataDefine.SKILL_TYPE.GREEN, 1);
+        SkillData.Add(DataDefine.SKILL_TYPE.RAINBOW, 1);
     }
 
     
