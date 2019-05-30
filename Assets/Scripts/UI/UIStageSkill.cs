@@ -26,11 +26,11 @@ public class UIStageSkill : MonoBehaviour, IDragScrollItem
     }
 
     public void SetSkill(DataDefine.SKILL_TYPE type, int count, Action<UIStageSkill> startAction)
-   {
+    {
         Type = type;
         OriginCount = Count = count;
         startSkillAction = startAction;
-        
+
         SkillBG.sprite = UIManager.Instance.AtlasManager.SkillSprites[(int)type];
         countBG.sprite = UIManager.Instance.AtlasManager.SkillCountSprites[(int)type];
         countBG.gameObject.SetActive(true);
@@ -43,14 +43,18 @@ public class UIStageSkill : MonoBehaviour, IDragScrollItem
         countBG.gameObject.SetActive(false);
     }
 
-    private void SetCount(int value)
+    public void SetCount(int addCount)
     {
-        countText.text = value.ToString();
+        Count += addCount;
+        countText.text = Count.ToString();
     }
 
     public void OnStartDrag()
     {
-        SetCount(Count - 1);
-        startSkillAction?.Invoke(this);
+        if (Count > 0)
+        {
+            SetCount(-1);
+            startSkillAction?.Invoke(this);
+        }
     }
 }

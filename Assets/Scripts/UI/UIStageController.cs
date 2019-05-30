@@ -8,6 +8,7 @@ public class UIStageController : UIControllerBase
     [SerializeField] private GameObject blockPrefab;
     [SerializeField] private GameObject skillPrefab;
 
+    private DataDefine.BLOCK_TYPE[,] playMapData;
     private UIStageBlock[,] mapBlocks;
     private GridLayoutGroup mapGrid;
 
@@ -19,6 +20,8 @@ public class UIStageController : UIControllerBase
 
     private delegate void OnUpdateMapBlockDelegate(DataDefine.SKILL_TYPE type, List<UIStageBlock> targetBlockList, bool isPreview);
     private OnUpdateMapBlockDelegate OnUpdateMapBlock;
+    private delegate void OnUpdateSkillDelegate(int addCount);
+    private OnUpdateSkillDelegate OnUpdateSkill;
 
     protected override void Start()
     {
@@ -47,9 +50,9 @@ public class UIStageController : UIControllerBase
 
     private void SetBlocksUI()
     {
-        DataDefine.BLOCK_TYPE[,] map = StageManager.Instance.MapData;
+        playMapData = StageManager.Instance.MapData;
 
-        int count = map.GetLength(0);
+        int count = playMapData.GetLength(0);
 
         if (mapGrid.transform.childCount == 0)
             mapBlocks = InitMapBlocks(count);
@@ -57,7 +60,7 @@ public class UIStageController : UIControllerBase
         for (int column = 0; column < count; column++)
         {
             for (int row = 0; row < count; row++)
-                mapBlocks[column, row].SetBlockData(map[column, row]);
+                mapBlocks[column, row].SetBlockData(playMapData[column, row]);
         }
     }
 
@@ -124,6 +127,8 @@ public class UIStageController : UIControllerBase
 
     private void StartDragSkill(UIStageSkill targetSkill)
     {
+        OnUpdateSkill = targetSkill.SetCount;
+
         dragSkill.OnDrag = PreviewSkill;
         dragSkill.OnEndDrag = EndDragSkill;
         dragSkill.View(targetSkill.Type, targetSkill.SkillBG.sprite);
@@ -133,9 +138,9 @@ public class UIStageController : UIControllerBase
     {
         int[] moveIndex = GetMapIndexForPosition(movePos);
 
-        if (moveIndex == null)
+        if (mapIndexForSkill == moveIndex)
             return;
-        else if (mapIndexForSkill[0] == moveIndex[0] && mapIndexForSkill[1] == moveIndex[1])
+        else if (mapIndexForSkill != null && moveIndex != null && mapIndexForSkill[0] == moveIndex[0] && mapIndexForSkill[1] == moveIndex[1])
             return;
 
         mapIndexForSkill = moveIndex;
@@ -144,13 +149,15 @@ public class UIStageController : UIControllerBase
 
     private void EndDragSkill()
     {
+        if (mapIndexForSkill == null)
+            OnUpdateSkill?.Invoke(1);
+
         SetMapForSkill(dragSkill.CurrentType, false);
+        OnUpdateSkill = null;
     }
 
     private int[] GetMapIndexForPosition(Vector2 movePos)
     {
-        int[] result = new int[2];
-
         Vector2 gridPos = mapGrid.transform.InverseTransformPoint(movePos);
         Vector2 moveIndex = gridPos / (mapGrid.cellSize + mapGrid.spacing);
         moveIndex.y *= -1;
@@ -159,19 +166,19 @@ public class UIStageController : UIControllerBase
             return null;
         else
         {
-            result[0] = (int)moveIndex.y;
-            result[1] = (int)moveIndex.x;
+            int[] result = new int[2] { (int)moveIndex.y, (int)moveIndex.x };
             return result;
         }
     }
 
     private void SetMapForSkill(DataDefine.SKILL_TYPE skillType, bool isPreivew)
     {
+        List<UIStageBlock> targetList = new List<UIStageBlock>();
+
         if (mapIndexForSkill == null)
-            OnUpdateMapBlock?.Invoke(DataDefine.SKILL_TYPE.TEMP, null, isPreivew);
+            OnUpdateMapBlock?.Invoke(DataDefine.SKILL_TYPE.TEMP, targetList, isPreivew);
         else
         {
-            List<UIStageBlock> targetList = new List<UIStageBlock>();
             targetList.Add(mapBlocks[mapIndexForSkill[0], mapIndexForSkill[1]]);
             Dictionary<string, int[]> rangeDic = new Dictionary<string, int[]>();
             int[] rangeIndex = new int[2];
@@ -185,22 +192,18 @@ public class UIStageController : UIControllerBase
                     rangeDic.Add("column", new int[2] { -1, 1 });
                     break;
                 case DataDefine.SKILL_TYPE.RED:
-                    rangeDic.Add("row", new int[2] { -5, 5 });
                     rangeDic.Add("column", new int[2] { -5, 5 });
                     break;
                 case DataDefine.SKILL_TYPE.GREEN:
-                    rangeDic.Add("diagonalL", new int[2] { 0, 1 });
-                    rangeDic.Add("diagonalR", new int[2] { 0, 1 });
+                    rangeDic.Add("row", new int[2] { -5, 5 });
                     break;
                 case DataDefine.SKILL_TYPE.BLUE:
-                    rangeDic.Add("diagonalL", new int[2] { -5, 5 });
-                    rangeDic.Add("diagonalR", new int[2] { -5, 5 });
-                    break;
-                case DataDefine.SKILL_TYPE.RAINBOW:
-                    rangeDic.Add("row", new int[2] { -1, 1 });
-                    rangeDic.Add("column", new int[2] { -1, 1 });
                     rangeDic.Add("diagonalL", new int[2] { -1, 1 });
                     rangeDic.Add("diagonalR", new int[2] { -1, 1 });
+                    break;
+                case DataDefine.SKILL_TYPE.RAINBOW:
+                    rangeDic.Add("row", new int[2] { -5, 5 });
+                    rangeDic.Add("column", new int[2] { -5, 5 });
                     break;
                 default:
                     break;
@@ -219,11 +222,11 @@ public class UIStageController : UIControllerBase
                     switch (range.Key)
                     {
                         case "row":
-                            rangeIndex[0] += i;
+                            rangeIndex[1] += i;
                             break;
 
                         case "column":
-                            rangeIndex[1] += i;
+                            rangeIndex[0] += i;
                             break;
 
                         case "diagonalR":
@@ -240,7 +243,12 @@ public class UIStageController : UIControllerBase
                     if (rangeIndex[0] < 0 || rangeIndex[0] >= StageManager.Instance.BlockMaxCount || rangeIndex[1] < 0 || rangeIndex[1] >= StageManager.Instance.BlockMaxCount)
                         continue;
 
+
+
                     targetList.Add(mapBlocks[rangeIndex[0], rangeIndex[1]]);
+
+                    if (!isPreivew)
+                        SetMapData(DataDefine.BLOCK_TYPE.SKILL, rangeIndex);
                 }
             }
 
@@ -248,4 +256,10 @@ public class UIStageController : UIControllerBase
         }
     }
     #endregion
+
+    private void SetMapData(DataDefine.BLOCK_TYPE type, int[] mapIndex)
+    {
+        DataDefine.BLOCK_TYPE originBlock = playMapData[mapIndex[0], mapIndex[1]];
+        playMapData[mapIndex[0], mapIndex[1]] = type;
+    }
 }

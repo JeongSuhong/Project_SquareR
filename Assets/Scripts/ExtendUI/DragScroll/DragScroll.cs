@@ -6,6 +6,8 @@ using UnityEngine.UI;
 
 public class DragScroll : ScrollRect, IPointerDownHandler
 {
+
+    private IDragScrollItem dragItem;
     private Vector2 startPointerPos;
     private bool isDragItem;
     private bool isScrolling;
@@ -15,6 +17,7 @@ public class DragScroll : ScrollRect, IPointerDownHandler
         isDragItem = false;
         isScrolling = false;
         startPointerPos = eventData.position;
+        dragItem = null;
     }
 
     public override void OnDrag(PointerEventData eventData)
@@ -23,10 +26,11 @@ public class DragScroll : ScrollRect, IPointerDownHandler
         {
             if (Mathf.Abs(startPointerPos.y - eventData.position.y) > 10)       // Drag Skill
             {
-                IDragScrollItem dragItem = eventData.pointerPressRaycast.gameObject.GetComponent<IDragScrollItem>();
+                IDragScrollItem item = eventData.pointerPressRaycast.gameObject.GetComponent<IDragScrollItem>();
 
-                if (dragItem != null)
+                if (item != null && dragItem != item)
                 {
+                    dragItem = item;
                     dragItem.OnStartDrag();
                     isDragItem = true;
                 }
