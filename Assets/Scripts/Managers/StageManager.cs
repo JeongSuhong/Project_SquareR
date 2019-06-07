@@ -21,6 +21,9 @@ public class StageManager : MonoBehaviour
     public DataDefine.BLOCK_TYPE[,] MapData { get; private set; }
     public Dictionary<DataDefine.SKILL_TYPE, int> SkillData { get; private set; }
 
+    public bool IsWin { get; private set; }
+    public int Score { get; private set; }
+
     private void Awake()
     {
         instance = this;
@@ -48,5 +51,13 @@ public class StageManager : MonoBehaviour
         SkillData.Add(DataDefine.SKILL_TYPE.RAINBOW, 1);
     }
 
-    
+
+    public void EndPlay(bool isWin, int score)
+    {
+        IsWin = isWin;
+        Score = score;
+
+        WorldManager.Instance.ChangeGameState(DataDefine.GAME_STATE.RESULT);
+    }
+
 }

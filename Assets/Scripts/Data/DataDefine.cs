@@ -6,6 +6,7 @@ public static class DataDefine
     {
         START,
         STAGE,
+        RESULT,
     }
 
     // Stage

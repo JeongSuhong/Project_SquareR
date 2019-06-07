@@ -24,7 +24,7 @@ public class DragScroll : ScrollRect, IPointerDownHandler
     {
         if (!isScrolling)
         {
-            if (Mathf.Abs(startPointerPos.y - eventData.position.y) > 10)       // Drag Skill
+            if (Mathf.Abs(startPointerPos.y - eventData.position.y) > 5)       // Drag Skill
             {
                 IDragScrollItem item = eventData.pointerPressRaycast.gameObject.GetComponent<IDragScrollItem>();
 
