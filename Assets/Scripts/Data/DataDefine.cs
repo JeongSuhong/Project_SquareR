@@ -2,6 +2,8 @@
 
 public static class DataDefine
 {
+    public const int BlockMaxCount = 6;
+
     public enum GAME_STATE
     {
         START,

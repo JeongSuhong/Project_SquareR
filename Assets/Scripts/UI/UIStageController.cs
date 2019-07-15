@@ -8,8 +8,6 @@ public class UIStageController : UIControllerBase
     [SerializeField] private GameObject blockPrefab;
     [SerializeField] private GameObject skillPrefab;
 
-    private DataDefine.BLOCK_TYPE[,] playMapData;
-    public int targetBlockCount;
     private UIStageBlock[,] mapBlocks;
     private GridLayoutGroup mapGrid;
 
@@ -33,54 +31,48 @@ public class UIStageController : UIControllerBase
 
         mapIndexForSkill = new int[2];
         dragSkill = GetComponentInChildren<UIDragSkill>(true);
+
+        PlayManager.Instance.OnUpdateMap += SetBlocksUI;
     }
 
     protected override void UpdateUI(DataDefine.GAME_STATE state)
     {
         if (state == DataDefine.GAME_STATE.STAGE)
         {
-            SetBlocksUI();
             SetSkillsUI();
             canvas.enabled = true;
         }
-        else if (state == DataDefine.GAME_STATE.RESULT)
-            ResetPlayData();
         else if (canvas.enabled)
             canvas.enabled = false;
     }
 
     #region Set Map
 
-    private void SetBlocksUI()
+    private void SetBlocksUI(List<BlockData> mapData)
     {
-        playMapData = StageManager.Instance.MapData.Clone() as DataDefine.BLOCK_TYPE[,];
-
-        int count = playMapData.GetLength(0);
+        int index = 0;
 
         if (mapGrid.transform.childCount == 0)
-            mapBlocks = InitMapBlocks(count);
+            mapBlocks = InitMapBlocks(DataDefine.BlockMaxCount);
 
-        for (int column = 0; column < count; column++)
+        for (int column = 0; column < DataDefine.BlockMaxCount; column++)
         {
-            for (int row = 0; row < count; row++)
+            for (int row = 0; row < DataDefine.BlockMaxCount; row++)
             {
-                if (playMapData[column, row] == DataDefine.BLOCK_TYPE.TARGET)
-                    targetBlockCount++;
-
-                mapBlocks[column, row].SetBlockData(playMapData[column, row]);
+                mapBlocks[column, row].SetBlock(index, mapData[index]);
+                index++;
             }
         }
-
     }
 
-    private UIStageBlock[,] InitMapBlocks(int count)
+    private UIStageBlock[,] InitMapBlocks(int rowCount)
     {
-        UIStageBlock[,] result = new UIStageBlock[count, count];
+        UIStageBlock[,] result = new UIStageBlock[rowCount, rowCount];
         string blockObjectName = "block_{0}_{1}";
 
-        for (int column = 0; column < count; column++)
+        for (int column = 0; column < rowCount; column++)
         {
-            for (int row = 0; row < count; row++)
+            for (int row = 0; row < rowCount; row++)
             {
                 GameObject blockObj = Instantiate(blockPrefab, mapGrid.transform);
                 blockObj.name = string.Format(blockObjectName, column, row);
@@ -99,7 +91,7 @@ public class UIStageController : UIControllerBase
 
     private void SetSkillsUI()
     {
-        Dictionary<DataDefine.SKILL_TYPE, int> skill = StageManager.Instance.SkillData;
+        Dictionary<DataDefine.SKILL_TYPE, int> skill = PlayManager.Instance.CurrentSkill;
         int skillCount = skill.Count;
         int index = 0;
 
@@ -172,7 +164,7 @@ public class UIStageController : UIControllerBase
         Vector2 moveIndex = gridPos / (mapGrid.cellSize + mapGrid.spacing);
         moveIndex.y *= -1;
 
-        if (moveIndex.x < 0 || moveIndex.y < 0 || moveIndex.x >= StageManager.Instance.BlockMaxCount || moveIndex.y >= StageManager.Instance.BlockMaxCount)
+        if (moveIndex.x < 0 || moveIndex.y < 0 || moveIndex.x >= DataDefine.BlockMaxCount || moveIndex.y >= DataDefine.BlockMaxCount)
             return null;
         else
         {
@@ -184,13 +176,11 @@ public class UIStageController : UIControllerBase
     private void SetMapForSkill(DataDefine.SKILL_TYPE skillType, bool isPreivew)
     {
         List<UIStageBlock> targetList = new List<UIStageBlock>();
-        List<int[]> rangeIndexs = new List<int[]>();
 
         if (mapIndexForSkill == null)
             OnUpdateMapBlock?.Invoke(DataDefine.SKILL_TYPE.TEMP, targetList, isPreivew);
         else
         {
-            rangeIndexs.Add(new int[2] { mapIndexForSkill[0], mapIndexForSkill[1] });
             targetList.Add(mapBlocks[mapIndexForSkill[0], mapIndexForSkill[1]]);
             Dictionary<string, int[]> rangeDic = new Dictionary<string, int[]>();
             int[] rangeIndex = new int[2];
@@ -252,54 +242,24 @@ public class UIStageController : UIControllerBase
                             break;
                     }
 
-                    if (rangeIndex[0] < 0 || rangeIndex[0] >= StageManager.Instance.BlockMaxCount || rangeIndex[1] < 0 || rangeIndex[1] >= StageManager.Instance.BlockMaxCount)
+                    if (rangeIndex[0] < 0 || rangeIndex[0] >= DataDefine.BlockMaxCount || rangeIndex[1] < 0 || rangeIndex[1] >= DataDefine.BlockMaxCount)
                         continue;
 
-                    rangeIndexs.Add(new int[2] { rangeIndex[0], rangeIndex[1] });
                     targetList.Add(mapBlocks[rangeIndex[0], rangeIndex[1]]);
                 }
             }
 
             if (!isPreivew)
             {
-                for (int i = 0; i < rangeIndexs.Count; i++)
-                {
-                    if (!SetMapData(DataDefine.BLOCK_TYPE.SKILL, rangeIndexs[i]))
-                        break;
-                }
+                Dictionary<int, DataDefine.SKILL_TYPE> datas = new Dictionary<int, DataDefine.SKILL_TYPE>();
+                for (int i = 0; i < targetList.Count; i++)
+                    datas.Add(targetList[i].Index, skillType);
+
+                PlayManager.Instance.SetMapDataForSkill(datas);
             }
 
             OnUpdateMapBlock?.Invoke(skillType, targetList, isPreivew);
         }
     }
     #endregion
-
-    private bool SetMapData(DataDefine.BLOCK_TYPE type, int[] mapIndex)
-    {
-        DataDefine.BLOCK_TYPE originBlock = playMapData[mapIndex[0], mapIndex[1]];
-
-        if (originBlock == DataDefine.BLOCK_TYPE.TRAP)
-        {
-            StageManager.Instance.EndPlay(false, 0);
-            return false;
-        }
-        else if (originBlock == DataDefine.BLOCK_TYPE.TARGET)
-        {
-            targetBlockCount--;
-
-            if (targetBlockCount == 0)
-            {
-                StageManager.Instance.EndPlay(false, 99999);
-                return false;
-            }
-        }
-
-        playMapData[mapIndex[0], mapIndex[1]] = type;
-        return true;
-    }
-
-    private void ResetPlayData()
-    {
-        targetBlockCount = 0;
-    }
 }

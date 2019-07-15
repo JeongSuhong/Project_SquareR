@@ -22,7 +22,7 @@ public class UIResultController : UIControllerBase
 
     private void SetResult()
     {
-        scoreText.text = StageManager.Instance.Score.ToString();
+        scoreText.text = PlayManager.Instance.Score.ToString();
         canvas.enabled = true;
     }
 

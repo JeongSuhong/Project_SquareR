@@ -5,24 +5,30 @@ using UnityEngine.UI;
 
 public class UIStageBlock : MonoBehaviour
 {
-    public DataDefine.BLOCK_TYPE BlockType; //{ get; private set; }
-    private DataDefine.SKILL_TYPE skillType;
-
+    public int Index { get; private set; }
     private Image background;
     private Image itemIcon;
 
     private bool isChangedSprite;
     private bool isInit;
 
-    public void SetBlockData(DataDefine.BLOCK_TYPE block, DataDefine.SKILL_TYPE skill = DataDefine.SKILL_TYPE.TEMP)
+    private void InitBlock()
+    {
+        background = GetComponent<Image>();
+        itemIcon = GetComponentsInChildren<Image>()[1];
+        itemIcon.gameObject.SetActive(false);
+
+        isInit = true;
+    }
+
+    public void SetBlock(int index, BlockData data)
     {
         if (!isInit)
             InitBlock();
 
-        BlockType = block;
-        skillType = skill;
-
-        SetBlockSprite(block, skillType);
+        Index = index;
+    
+        SetBlockSprite(data.BlockType, data.SkillType);
     }
 
     private void SetBlockSprite(DataDefine.BLOCK_TYPE type, DataDefine.SKILL_TYPE skill)
@@ -44,15 +50,6 @@ public class UIStageBlock : MonoBehaviour
         }
     }
 
-    private void InitBlock()
-    {
-        background = GetComponent<Image>();
-        itemIcon = GetComponentsInChildren<Image>()[1];
-        itemIcon.gameObject.SetActive(false);
-
-        isInit = true;
-    }
-
     public void UpdateBlock(DataDefine.SKILL_TYPE type, List<UIStageBlock> targetBlockList, bool isPreview)
     {
         if (isPreview)
@@ -65,13 +62,9 @@ public class UIStageBlock : MonoBehaviour
             else if (isChangedSprite)
             {
                 isChangedSprite = false;
-                SetBlockSprite(BlockType, skillType);
+                BlockData originData = PlayManager.Instance.GetBlockData(Index);
+                SetBlockSprite(originData.BlockType, originData.SkillType);
             }
-        }
-        else
-        {
-            if (targetBlockList.Contains(this))
-                SetBlockData(DataDefine.BLOCK_TYPE.SKILL, type);
         }
     }
 }
