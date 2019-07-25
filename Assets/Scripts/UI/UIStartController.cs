@@ -15,7 +15,7 @@ public class UIStartController : UIControllerBase
 
     public void MoveStartForButton()
     {
-        WorldManager.Instance.ChangeGameState(DataDefine.GAME_STATE.STAGE);
+        WorldManager.Instance.ChangeGameState(DataDefine.GAME_STATE.SELECT);
     }
 
 

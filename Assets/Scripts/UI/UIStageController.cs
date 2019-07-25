@@ -262,4 +262,9 @@ public class UIStageController : UIControllerBase
         }
     }
     #endregion
+
+    public void OnClickViewOption()
+    {
+        UIManager.Instance.Option.View();
+    }
 }

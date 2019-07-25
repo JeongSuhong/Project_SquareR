@@ -7,6 +7,7 @@ public static class DataDefine
     public enum GAME_STATE
     {
         START,
+        SELECT,
         STAGE,
         RESULT,
     }

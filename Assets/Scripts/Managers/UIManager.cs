@@ -17,6 +17,7 @@ public class UIManager : MonoBehaviour
     }
 
     public UIAtlasManager AtlasManager { get; private set; }
+    public UIOption Option;
 
     public delegate void UpdateUIDelegate(DataDefine.GAME_STATE gameState);
     public event UpdateUIDelegate OnUpdateUI;
